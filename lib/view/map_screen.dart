@@ -14,15 +14,15 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  Set<Marker> _markers = {}; // Markerları tutmak için bir set oluşturduk
-  List<LatLng> markerLocations = []; // Marker konumlarını tutmak için bir liste oluşturduk
+  Set<Marker> _markers = {};
+  List<LatLng> markerLocations = [];
 
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(41.6771, 26.5557),
     zoom: 14.4746,
   );
 
-  String infoText = 'Lütfen bulunduğunuz konumu seçiniz'; // Kullanıcıya gösterilecek bilgi metni
+  String infoText = 'Lütfen bulunduğunuz konumu seçiniz';
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +35,20 @@ class MapSampleState extends State<MapSample> {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
             },
-            onTap: _addMarker, // Haritaya tıklanınca _addMarker fonksiyonunu çağırıyoruz
-            markers: _markers, // Haritada gösterilecek markerları belirtiyoruz
+            onTap: _addMarker,
+            markers: _markers,
           ),
           Positioned(
             top: 10.0,
             left: 10.0,
-            child: Text(infoText, style: TextStyle(fontSize: 20.0)), // Bilgi metnini ekrana yazdırıyoruz
+            child: ElevatedButton(
+              onPressed: () {
+                if (markerLocations.length == 2) {
+                  _calculateDistance(markerLocations[0], markerLocations[1]);
+                }
+              },
+              child: Text(infoText, style: TextStyle(fontSize: 20.0)),
+            ),
           ),
         ],
       ),
@@ -50,7 +57,7 @@ class MapSampleState extends State<MapSample> {
 
   void _addMarker(LatLng pos) {
     if (_markers.length >= 2) {
-      return; // Eğer zaten iki marker varsa, yeni bir marker eklemiyoruz
+      return;
     }
 
     setState(() {
@@ -58,13 +65,12 @@ class MapSampleState extends State<MapSample> {
         markerId: MarkerId(pos.toString()),
         position: pos,
       ));
-      markerLocations.add(pos); // Marker konumunu listeye ekliyoruz
+      markerLocations.add(pos);
 
       if (markerLocations.length == 1) {
-        infoText = 'Lütfen gitmek istediğiniz konumu seçiniz'; // İlk marker seçildikten sonra bilgi metnini güncelliyoruz
-      } else if (markerLocations.length == 2) { // Eğer iki marker seçildiyse, aralarındaki mesafeyi hesaplıyoruz
-        _calculateDistance(markerLocations[0], markerLocations[1]);
-        infoText = ''; // Mesafe hesaplandıktan sonra bilgi metnini siliyoruz
+        infoText = 'Tamam, şimdi gitmek istediğiniz konumu seçiniz';
+      } else if (markerLocations.length == 2) {
+        infoText = 'Mesafeyi hesapla';
       }
     });
   }
@@ -77,7 +83,7 @@ class MapSampleState extends State<MapSample> {
       pos2.longitude,
     );
     setState(() {
-      infoText = 'Markerlar arasındaki mesafe: ${distanceInMeters.toStringAsFixed(2)} metre'; // Mesafeyi bilgi metnine yazdırıyoruz
+      infoText = 'Konumlar arasındaki mesafe: ${distanceInMeters.toStringAsFixed(2)} metre';
     });
   }
 }
